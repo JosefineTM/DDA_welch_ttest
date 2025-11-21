@@ -21,21 +21,34 @@ import pandas as pd
 from scipy.stats import ttest_ind
 
 
-# VALID_METHODS = ['birch', 'kmeans', 'spectral', 'gm']
-
-
-def load_labels(data_file):
-    data = np.loadtxt(data_file, ndmin=1)
-    if data.ndim != 1:
-        raise ValueError("Invalid data structure: true_labels must be 1D")
-    return data.astype(int)
+# VALID_METHODS = no methods
 
 
 def load_dataset(data_file):
-    data = np.loadtxt(data_file, ndmin=2)
+    data = (
+    pd.read_csv(data_file, index_col=0)
+    .set_index('Name')
+    .select_dtypes(include=['number']) # Select only proteomics data
+    .T #transform
+)
     if data.ndim != 2:
         raise ValueError("Invalid data structure: data.matrix must be 2D")
     return data
+
+def get_labels(data):
+    # Make sure there is something in the index
+    if len(data.index) == 0:
+        raise ValueError("Data index is empty.")
+
+    labels = [0 if ".N" in name else 1 for name in data.index]
+
+    # Warn if there are only one class (case or control) in the data.
+    if len(set(labels)) < 2:
+        warnings.warn("Labels contain only one class.", UserWarning)
+    
+    print(f'Found {labels.count(0)} controls and {labels.count(1)} cases in the data.')
+
+    return labels
 
 def welch_ttest_df(X, labels):
     """
