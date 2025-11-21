@@ -1,0 +1,14 @@
+# YAML snippet to paste into bigger yaml picture
+# Probably not right now - I am trying things out
+
+modules:
+  - id: welch_ttest
+    name: "Simple Welch t-test benchmark module"
+    description: "Runs column-wise Welch t-tests between two groups (0 vs 1) on a dataset and outputs a CSV of t-statistics and p-values."
+    software_environment: "welch_venv"
+    outputs:
+      - id: welch_results
+        path: "{input}/{stage}/{module}/{params}/{dataset}.csv"
+    repository:
+      url: https://github.com/JosefineTM/DDA_welch_ttest
+      commit: 4d4713db
