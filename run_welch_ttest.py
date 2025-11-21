@@ -50,21 +50,25 @@ def get_labels(data):
 
     return labels
 
-def welch_ttest_df(X, labels):
+import numpy as np
+import pandas as pd
+from scipy.stats import ttest_ind
+
+def welch_ttest_df(data, labels):
     """
-    X: 2D numpy array, shape (n_samples, n_features)
-    labels: 1D array of 0/1 group labels, length = n_samples
+    data: Pandas dataframe with proteins as columns and samples as rows
+    labels: 1D array of 0/1 group labels, length = n_samples = n_rows in data
     
     Returns:
         pandas DataFrame with t-statistics and p-values for each column
     """
 
-    X = np.asarray(X)
+    X = np.asarray(data)
     labels = np.asarray(labels)
     
     results = []
 
-    for col_idx in range(X.shape[1]):
+    for col_idx in range(data.shape[1]):
         col = X[:, col_idx]
         
         # Split into groups
@@ -74,12 +78,11 @@ def welch_ttest_df(X, labels):
         # Run Welch's t-test (unequal variance)
         t_stat, p_val = ttest_ind(group0, group1, equal_var=False)
         
-        results.append({'feature': f'col_{col_idx}', 't_stat': t_stat, 'p_value': p_val})
+        results.append({'protein': f'{data.columns[col_idx]}', 'effect_size': t_stat, 'p_value': p_val})
 
     df = pd.DataFrame(results)
     return df
 
-# def run_welch(data, labels):
 
 
 def main():
