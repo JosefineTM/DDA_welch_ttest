@@ -4,24 +4,20 @@
 Simple Welch t-test Omnibenchmark module.
 
 Loads:
-  --data.matrix         numeric matrix (samples × features)
-  --data.true_labels    1D cluster/group labels (one per sample)
+  --data         csv dataframe with proteins as rows and samples as columns. 
 
 Outputs:
-  A CSV-like .gz matrix:
-      header: 
-      rows:   
+  A CSV-like matrix:
+      header: protein, effect_size, p-value
+      rows:   per-protein results
 """
 
 import argparse
 import os, sys
 import numpy as np
-from itertools import combinations
 import pandas as pd
 from scipy.stats import ttest_ind
-
-
-# VALID_METHODS = no methods
+import warnings
 
 
 def load_dataset(data_file):
@@ -88,10 +84,8 @@ def welch_ttest_df(data, labels):
 def main():
     parser = argparse.ArgumentParser(description='Welch t-test benchmark runner')
 
-    parser.add_argument('--data.matrix', type=str,
-                        help='gz-compressed textfile containing the comma-separated data to be clustered.', required = True)
-    parser.add_argument('--data.true_labels', type=str,
-                        help='gz-compressed textfile with the true labels; used to select a range of ks.', required = True) 
+    parser.add_argument('--data', type=str,
+                        help='csv dataframe with proteins as rows and samples as columns.', required = True)
     parser.add_argument('--output_dir', type=str,
                         help='output directory to store data files.')
     # parser.add_argument('--name', type=str, help='name of the dataset', default='clustbench')
@@ -105,12 +99,15 @@ def main():
         parser.print_help()
         sys.exit(0)
 
-    labels = load_labels(getattr(args, 'data.true_labels'))
-    X = load_dataset(getattr(args, 'data.matrix'))
+    print('Loading data')
+    data = load_dataset(getattr(args, 'data'))
+    labels = get_labels(data)
 
-    results = welch_ttest_df(X, labels)
+    print('Running Welch t-test')
+    results = welch_ttest_df(data, labels)
 
     results.to_csv(os.path.join(args.output_dir, "results_welch_ttest.csv"))
+    print(f'Welch t-test results are stored in {os.path.join(args.output_dir, "results_welch_ttest.csv")}')
 
 if __name__ == "__main__":
     main()
