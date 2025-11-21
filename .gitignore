@@ -1,0 +1,5 @@
+# Ignore all files with the .log extension
+*.log
+
+test.ipynb
+results_welch_ttest.csv
